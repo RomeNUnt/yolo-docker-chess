@@ -1,0 +1,7 @@
+ultralytics==8.3.237
+torch==2.5.1
+torchvision
+fastapi
+uvicorn
+pillow
+python-multipart
