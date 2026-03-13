@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Chess Piece Detector</title>
+
 <style>
 body {
     font-family: Arial;
@@ -14,7 +15,8 @@ body {
 .container {
     background: white;
     padding: 30px;
-    width: 400px;
+    max-width: 900px;
+    width: 90%;
     margin: auto;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -24,20 +26,108 @@ button {
     padding: 10px 20px;
     font-size: 16px;
 }
+
+/* Image + canvas overlay */
+.image-wrapper{
+    position: relative;
+    display: inline-block;
+}
+
+#preview{
+    max-width: 100%;
+}
+
+#canvas{
+    position:absolute;
+    left:0;
+    top:0;
+}
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
-<h1>♟ Chess Piece Detector</h1>
 
-<form action="/api/predict" method="post" enctype="multipart/form-data">
-<input type="file" name="file"><br><br>
-<button type="submit">Detect Pieces</button>
-</form>
+<h1>♟ Chess Piece Detector 2</h1>
+
+<input type="file" id="fileInput"><br><br>
+<button onclick="detect()">Detect Pieces</button>
+
+<br><br>
+
+<div class="image-wrapper">
+<img id="preview">
+<canvas id="canvas"></canvas>
+</div>
 
 </div>
+
+<h3>Detections</h3>
+<pre id="results"></pre>
+
+<script>
+
+async function detect(){
+
+    const file = document.getElementById("fileInput").files[0]
+
+    const formData = new FormData()
+    formData.append("file", file)
+
+    const response = await fetch("/api/predict",{
+        method:"POST",
+        body:formData
+    })
+
+    const data = await response.json()
+    document.getElementById("results").textContent = JSON.stringify(data.detections, null, 2)
+
+    const img = document.getElementById("preview")
+    img.src = URL.createObjectURL(file)
+
+    img.onload = () => drawBoxes(data.detections)
+}
+
+
+function drawBoxes(detections){
+
+    const img = document.getElementById("preview")
+    const canvas = document.getElementById("canvas")
+
+    canvas.width = img.width
+    canvas.height = img.height
+
+    const ctx = canvas.getContext("2d")
+
+    ctx.clearRect(0,0,canvas.width,canvas.height)
+
+    ctx.strokeStyle = "red"
+    ctx.lineWidth = 3
+    ctx.font = "16px Arial"
+    ctx.fillStyle = "red"
+
+    detections.forEach(det => {
+
+        const x = det.bbox.x1
+        const y = det.bbox.y1
+        const w = det.bbox.x2 - det.bbox.x1
+        const h = det.bbox.y2 - det.bbox.y1
+
+        ctx.strokeRect(x,y,w,h)
+
+        ctx.fillText(
+            det.class + " " + det.confidence.toFixed(2),
+            x,
+            y - 5
+        )
+
+    })
+
+}
+
+</script>
 
 </body>
 </html>
