@@ -17,9 +17,17 @@ body {
     padding: 30px;
     max-width: 900px;
     width: 90%;
-    margin: auto;
+    margin: 40px auto;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.version {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 12px;
+    color: #888;
 }
 
 button {
@@ -35,6 +43,8 @@ button {
 
 #preview{
     max-width: 100%;
+    height: auto;
+    display: block;
 }
 
 #canvas{
@@ -50,7 +60,11 @@ button {
 
 <div class="container">
 
-<h1>♟ Chess Piece Detector 2</h1>
+<div class = "version">v1.0.4</div>
+
+<h1>♟ Chess Piece Detector</h1>
+<p>Note: Detections will be displayed as abbreviations</p>
+<p>Example: "WK" = white king, "BKN" = black knight, etc.</p>
 
 <input type="file" id="fileInput"><br><br>
 <button onclick="detect()">Detect Pieces</button>
@@ -101,6 +115,9 @@ function drawBoxes(detections){
 
     const ctx = canvas.getContext("2d")
 
+    const scaleX = img.width / img.naturalWidth
+    const scaleY = img.height / img.naturalHeight
+
     ctx.clearRect(0,0,canvas.width,canvas.height)
 
     ctx.strokeStyle = "red"
@@ -110,10 +127,10 @@ function drawBoxes(detections){
 
     detections.forEach(det => {
 
-        const x = det.bbox.x1
-        const y = det.bbox.y1
-        const w = det.bbox.x2 - det.bbox.x1
-        const h = det.bbox.y2 - det.bbox.y1
+        const x = det.bbox.x1 * scaleX
+        const y = det.bbox.y1 * scaleY
+        const w = (det.bbox.x2 - det.bbox.x1) * scaleX
+        const h = (det.bbox.y2 - det.bbox.y1) * scaleY
 
         ctx.strokeRect(x,y,w,h)
 
@@ -122,9 +139,7 @@ function drawBoxes(detections){
             x,
             y - 5
         )
-
     })
-
 }
 
 </script>
